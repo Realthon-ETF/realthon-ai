@@ -155,3 +155,89 @@ Set the handler to `app.router.lambda_handler` (default when using this Dockerfi
 ## Scheduling
 
 Trigger the router Lambda via EventBridge or any custom integration. Include the JSON payload described above so the router knows which job to run.
+
+.
+
+## Module: Two-Stage Resume Summarization Pipeline
+
+This module explains the two-stage pipeline used to convert a raw resume into (1) a structured analysis and (2) a human-friendly four-line summary.
+The pipeline is built on top of the OpenAI Chat Completions API and is designed for accuracy, consistency, and natural language quality by separating the logic into two clearly defined stages.
+
+## Stage 1: Structured Analysis (JSON Extraction)
+
+Goal:
+Extract factual, resume-based information and organize it into a clean JSON structure.
+
+Characteristics:
+
+Produces strictly formatted JSON (no extra text)
+
+Focuses on factual content only
+
+Avoids speculation or subjective interpretation
+
+Uses temperature = 0.1 to ensure consistency and deterministic output
+
+This stage decides what should be said
+
+Example Output:
+
+{
+  "summary": "...",
+  "strengths": ["..."],
+  "weaknesses": ["..."],
+  "improvements": ["..."]
+}
+
+## Stage 2: Natural Four-Line Summary
+
+Goal:
+Convert the Stage 1 JSON into a natural, recruiter-style four-sentence summary.
+
+Characteristics:
+
+Turns structured data into smooth, human-readable sentences
+
+Uses a soft tone (e.g., “~ is helpful”, “~ seems strong”)
+
+Each line is exactly one sentence
+
+Uses temperature = 0.4 for more natural phrasing
+
+This stage decides how it should be said
+
+Required Output Format:
+
+Summary: ~~
+Strengths: ~~
+Weaknesses: ~~
+Areas for Improvement: ~~
+
+## Why Use a Two-Stage Pipeline?
+Stage	Purpose	Benefit
+Stage 1	Extract accurate structured data	Ensures correctness & stability
+Stage 2	Generate natural language	Ensures clarity & readability
+
+Advantages of the two-stage design:
+
+Higher accuracy (structured data first → no hallucinations in summary)
+
+Consistent tone and output format
+
+Easier debugging and modification
+
+Each stage can be improved independently
+
+Predictable and reliable results for production use
+
+## Overall Flow
+[Raw Resume Text]
+        │
+        ▼
+  Stage 1: Analysis → JSON
+        │
+        ▼
+  Stage 2: NLG → Four-line Summary
+        │
+        ▼
+   [Final Output Summary]
